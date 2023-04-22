@@ -1,0 +1,15 @@
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\CameraPlacements.dll
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\CameraPlacements.pdb
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\obj\Debug\net35\CameraPlacements.csproj.AssemblyReference.cache
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\obj\Debug\net35\PluginInfo.cs
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\obj\Debug\net35\CameraPlacements.GeneratedMSBuildEditorConfig.editorconfig
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\obj\Debug\net35\CameraPlacements.AssemblyInfoInputs.cache
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\obj\Debug\net35\CameraPlacements.AssemblyInfo.cs
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\obj\Debug\net35\CameraPlacements.csproj.CoreCompileInputs.cache
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\obj\Debug\net35\CameraPlacements.dll
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\obj\Debug\net35\CameraPlacements.pdb
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\Assembly-CSharp-firstpass.dll
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\Assembly-CSharp.dll
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\obj\Debug\net35\CameraPlacements.csproj.CopyComplete
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\NetLegacySupport.Tuple.dll
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\Theraot.Core.dll

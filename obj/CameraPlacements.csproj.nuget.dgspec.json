@@ -1,0 +1,82 @@
+{
+  "format": 1,
+  "restore": {
+    "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\CameraPlacements.csproj": {}
+  },
+  "projects": {
+    "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\CameraPlacements.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\CameraPlacements.csproj",
+        "projectName": "CameraPlacements",
+        "projectPath": "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\CameraPlacements.csproj",
+        "packagesPath": "C:\\Users\\MeblIkea\\.nuget\\packages\\",
+        "outputPath": "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\NuGet.Config",
+          "C:\\Users\\MeblIkea\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net35"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.bepinex.dev/v3/index.json": {}
+        },
+        "frameworks": {
+          "net35": {
+            "targetAlias": "net35",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net35": {
+          "targetAlias": "net35",
+          "dependencies": {
+            "BepInEx.Analyzers": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.*, )"
+            },
+            "BepInEx.Core": {
+              "target": "Package",
+              "version": "[5.*, )"
+            },
+            "BepInEx.PluginInfoProps": {
+              "target": "Package",
+              "version": "[1.*, )"
+            },
+            "Microsoft.NETFramework.ReferenceAssemblies": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.0.2, )"
+            },
+            "NetLegacySupport.Tuple": {
+              "target": "Package",
+              "version": "[1.1.1, )"
+            },
+            "Theraot.Core": {
+              "target": "Package",
+              "version": "[3.2.11, )"
+            },
+            "UnityEngine.Modules": {
+              "include": "Compile",
+              "target": "Package",
+              "version": "[2017.4.23, )"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.200\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
