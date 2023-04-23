@@ -200,24 +200,24 @@ namespace CameraPlacements
                 float.TryParse(GUI.TextField(new Rect(195, Screen.height - 250, 60, 20), point.Item1.z + ""), 
                     out var ppz);
                 float.TryParse(GUI.TextField(new Rect(65, Screen.height - 210, 60, 20), point.Item3 + ""),
-                    out var pfov);
+                    out var pFov);
                 int.TryParse(GUI.TextField(new Rect(65, Screen.height - 190, 60, 20), point.Item4 + ""),
-                    out var pspeed);
+                    out var pSpeed);
 
-                var nMoveType = 0;
+                var baseType = _pointsManager.Points[currentlySelectedPoint].Item5;
                 GUI.Label(new Rect(260, Screen.height - 230, 150, 20), "Animation mode:");
                 if (GUI.Toggle(new Rect(360, Screen.height - 230, 30, 20),
-                        _pointsManager.Points[currentlySelectedPoint].Item5 == 0, "▲")) nMoveType = 0;
+                        baseType == 0, "▲")) baseType = 0;
                 if (GUI.Toggle(new Rect(390, Screen.height - 230, 30, 20),
-                        _pointsManager.Points[currentlySelectedPoint].Item5 == 1, "●")) nMoveType = 1;
+                        baseType == 1, "●")) baseType = 1;
                 if (GUI.Toggle(new Rect(420, Screen.height - 230, 30, 20),
-                        _pointsManager.Points[currentlySelectedPoint].Item5 == 2, "■")) nMoveType = 2;
+                        baseType == 2, "■")) baseType = 2;
                 
                 _pointsManager.Points[currentlySelectedPoint] = (
                     new Vector3(ppx, ppy, ppz), 
                     new Vector3( Clamp(prx, 359, 0), Clamp(pry, 359, 0), Clamp(prz, 359, 0)),
-                    (int)Clamp(pfov, 175, 5),
-                    (int)Clamp(pspeed, 950, 0), nMoveType);
+                    (int)Clamp(pFov, 175, 5),
+                    (int)Clamp(pSpeed, 950, 0), baseType);
                 
                     lineRenderer.SetPosition(currentlySelectedPoint, _pointsManager.Points[currentlySelectedPoint].Item1);
             }
@@ -265,7 +265,6 @@ namespace CameraPlacements
         public bool zLocked;
         public bool animStarted;
         private float _startTime;
-        private GameObject _selfObject;
         private AnimationCurve _curve;
 
         private void Start()
@@ -274,7 +273,6 @@ namespace CameraPlacements
             _mCamera = gameObject.GetComponent<Camera>();
             _mCameraMenu = GameObject.Find("CameraMenu").GetComponent<CameraMenu>();
             _pointsManager = gameObject.GetComponent<PointsManager>();
-            _selfObject = GameObject.Find("FreeCamera");
         }
 
         public void StartAnimation()
@@ -293,7 +291,7 @@ namespace CameraPlacements
             {
                 _pointsManager.PointsObjects[i].SetActive(false);
             }
-            SetCurve(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item5);
+            SetCurve(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item5);
         }
 
         private void SetCurve(int type)
@@ -320,6 +318,12 @@ namespace CameraPlacements
             } else if (type == 2)
             {
                 _curve.AddKey(0, 0);
+                _curve.AddKey(0.99f, 0);
+                _curve.AddKey(1, 1);
+            }
+            else
+            {
+                Debug.LogError("Curve type not found");
             }
         }
         private void Update()
@@ -333,21 +337,12 @@ namespace CameraPlacements
                     _pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item3,
                     _pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item3,
                     (float)(1 - d / _originalDistance));
-                if (_pointsManager.Points[_mCameraMenu.currentlySelectedPoint-1].Item5 == 0)
-                {
-                    gameObject.transform.rotation = Quaternion.Lerp(
-                        Quaternion.Euler(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item2),
-                        Quaternion.Euler(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item2),
-                        (float)(1 - d / _originalDistance));
-                }
-                else if (_pointsManager.Points[_mCameraMenu.currentlySelectedPoint-1].Item5 == 1)
-                {
-                    gameObject.transform.rotation = Quaternion.Slerp(
-                        Quaternion.Euler(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item2),
-                        Quaternion.Euler(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item2),
-                        (float)(1 - d / _originalDistance));
-                }
-                // Estimate time to next point in seconds
+                
+                var curveValue = _curve.Evaluate((float)(1 - d / _originalDistance));
+                gameObject.transform.rotation = Quaternion.Lerp(
+                    Quaternion.Euler(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item2),
+                    Quaternion.Euler(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item2), curveValue);
+                    
                 
                 if (Math.Round(d) == 0 || (_pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item4 > 100 && d < 5))
                 {
@@ -368,12 +363,12 @@ namespace CameraPlacements
                         p1 = _pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item1;
                         _originalDistance = (float)Math.Sqrt(Math.Pow(p1.x - p0.x, 2) + Math.Pow(p1.y - p0.y, 2) + Math.Pow(p1.z - p0.z, 2));
                         _startTime = Time.time;
-                        SetCurve(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item5);
+                        SetCurve(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item5);
                     }
                 }
                 else
                 {
-                    var curveValue = _curve.Evaluate((Time.time - _startTime) * _pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item4 / _originalDistance);
+                    curveValue = _curve.Evaluate((Time.time - _startTime) * _pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item4 / _originalDistance);
                         
                     gameObject.transform.position = Vector3.Lerp(
                         _pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item1,
@@ -508,13 +503,11 @@ namespace CameraPlacements
         }
         private void Update()
         {
-            if (PointsObjects.Count > 0)
-            {
-                PointsObjects[_cameraMenu.currentlySelectedPoint].transform.position =
-                    Points[_cameraMenu.currentlySelectedPoint].Item1;
-                PointsObjects[_cameraMenu.currentlySelectedPoint].transform.eulerAngles =
-                    Points[_cameraMenu.currentlySelectedPoint].Item2;
-            }
+            if (PointsObjects.Count <= 0) return;
+            PointsObjects[_cameraMenu.currentlySelectedPoint].transform.position =
+                Points[_cameraMenu.currentlySelectedPoint].Item1;
+            PointsObjects[_cameraMenu.currentlySelectedPoint].transform.eulerAngles =
+                Points[_cameraMenu.currentlySelectedPoint].Item2;
         }
     }
 }
