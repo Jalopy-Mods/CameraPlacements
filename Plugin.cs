@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using BepInEx;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 
 namespace CameraPlacements
 {
@@ -94,7 +92,8 @@ namespace CameraPlacements
                 _newCamera.transform.position = GameObject.Find("/Main Camera").transform.position;
             } else if (SceneManager.GetActiveScene().name == "Scn2_CheckpointBravo")
             {
-                _newCamera.transform.position = GameObject.Find("/First Person Controller/Main Camera").transform.position;
+                _newCamera.transform.position = 
+                    GameObject.Find("/First Person Controller/Main Camera").transform.position;
             }
             _cameraManager = _newCamera.gameObject.AddComponent<CameraManager>();
             _pointsManager = _newCamera.gameObject.AddComponent<PointsManager>();
@@ -105,7 +104,7 @@ namespace CameraPlacements
         private void OnGUI()
         {
             GUI.Box(new Rect(5, Screen.height - 305, 500, 300), "Camera Control");
-            if (GUI.Button(new Rect(10, Screen.height - 70, 100, 60), "Switch view\nto freecam"))
+            if (GUI.Button(new Rect(10, Screen.height - 70, 100, 60),"Switch view\nto freecam"))
             {
                 _newCamera.enabled = !_newCamera.enabled;
             }
@@ -114,10 +113,17 @@ namespace CameraPlacements
             var position = transform1.position;
             var rotation = transform1.eulerAngles;
             GUI.Label(new Rect(115, Screen.height - 60, 50, 25), "Position");
-            _newCamera.transform.position = new Vector3(float.Parse(GUI.TextField(new Rect(170, Screen.height - 60, 60, 20), position.x + "")), float.Parse(GUI.TextField(new Rect(235, Screen.height - 60, 60, 20), position.y + "")), float.Parse(GUI.TextField(new Rect(300, Screen.height - 60, 60, 20), position.z + "")));
+            _newCamera.transform.position = new Vector3(
+                float.Parse(GUI.TextField(new Rect(170, Screen.height - 60, 60, 20), position.x + "")),
+                float.Parse(GUI.TextField(new Rect(235, Screen.height - 60, 60, 20), position.y + "")),
+                float.Parse(GUI.TextField(new Rect(300, Screen.height - 60, 60, 20), position.z + "")));
             GUI.Label(new Rect(115, Screen.height - 40, 50, 25), "Rotation");
-            _newCamera.transform.eulerAngles = new Vector3(float.Parse(GUI.TextField(new Rect(170, Screen.height - 40, 60, 20), rotation.x + "")), float.Parse(GUI.TextField(new Rect(235, Screen.height - 40, 60, 20), rotation.y + "")), float.Parse(GUI.TextField(new Rect(300, Screen.height - 40, 60, 20), rotation.z + "")));
-            _cameraManager.zLocked = GUI.Toggle(new Rect(365, Screen.height - 40, 100, 20), _cameraManager.zLocked, "Lock X&Z axis");
+            _newCamera.transform.eulerAngles = new Vector3(
+                float.Parse(GUI.TextField(new Rect(170, Screen.height - 40, 60, 20), rotation.x + "")),
+                float.Parse(GUI.TextField(new Rect(235, Screen.height - 40, 60, 20), rotation.y + "")),
+                float.Parse(GUI.TextField(new Rect(300, Screen.height - 40, 60, 20), rotation.z + "")));
+            _cameraManager.zLocked = GUI.Toggle(new Rect(365, Screen.height - 40, 100, 20), _cameraManager.zLocked,
+                "Lock X&Z axis");
             
             GUI.Label(new Rect(395, Screen.height - 305, 150, 20), "Camera FOV: "+ _newCamera.fieldOfView);
             GUI.Label(new Rect(380, Screen.height - 288, 150, 20), "Freecam Speed: "+ _cameraManager.mSpeed);
@@ -127,7 +133,8 @@ namespace CameraPlacements
             {
                 if (_pointsManager.Points.Count > currentlySelectedPoint) currentlySelectedPoint++;
                 var cameraTransform = _newCamera.transform;
-                _pointsManager.AddPoint(currentlySelectedPoint, cameraTransform.position, cameraTransform.eulerAngles, _newCamera.fieldOfView);
+                _pointsManager.AddPoint(currentlySelectedPoint, cameraTransform.position, cameraTransform.eulerAngles,
+                    _newCamera.fieldOfView);
             }
             if (GUI.Button(new Rect(345, Screen.height - 265, 150, 20), "Remove Point"))
             {
@@ -135,7 +142,8 @@ namespace CameraPlacements
                 if (currentlySelectedPoint > 0) currentlySelectedPoint--;
             }
             GUI.Label(new Rect(175, Screen.height - 287, 180, 20), "Currently Selected Point: "+currentlySelectedPoint);
-            currentlySelectedPoint = (int)GUI.HorizontalSlider(new Rect(180, Screen.height - 265, 150, 20), currentlySelectedPoint, 0,
+            currentlySelectedPoint = (int)GUI.HorizontalSlider(new Rect(180, Screen.height - 265, 150, 20),
+                currentlySelectedPoint, 0,
                 MinClamp(_pointsManager.Points.Count - 1, 0));
             if (_pointsManager.Points.Count > 0)
             {
@@ -143,9 +151,12 @@ namespace CameraPlacements
                 GUI.Label(new Rect(10, Screen.height - 230, 50, 25), "Rotation");
                 GUI.Label(new Rect(10, Screen.height - 210, 50, 25), "FOV");
                 var point = _pointsManager.Points[currentlySelectedPoint];
-                float.TryParse(GUI.TextField(new Rect(65, Screen.height - 230, 60, 20), point.Item2.x + ""), out var prx);
-                float.TryParse(GUI.TextField(new Rect(130, Screen.height - 230, 60, 20), point.Item2.y + ""), out var pry);
-                float.TryParse(GUI.TextField(new Rect(195, Screen.height - 230, 60, 20), point.Item2.z + ""), out var prz);
+                float.TryParse(
+                    GUI.TextField(new Rect(65, Screen.height - 230, 60, 20), point.Item2.x + ""), out var prx);
+                float.TryParse(
+                    GUI.TextField(new Rect(130, Screen.height - 230, 60, 20), point.Item2.y + ""), out var pry);
+                float.TryParse(
+                    GUI.TextField(new Rect(195, Screen.height - 230, 60, 20), point.Item2.z + ""), out var prz);
                 _pointsManager.Points[currentlySelectedPoint] = (
                     new Vector3(
                         float.Parse(GUI.TextField(new Rect(65, Screen.height - 250, 60, 20), point.Item1.x + "")), 
@@ -155,9 +166,15 @@ namespace CameraPlacements
                     float.Parse(GUI.TextField(new Rect(65, Screen.height - 210, 60, 20), point.Item3 + "")));
                 
             }
-            if (lastSelectedPoint != currentlySelectedPoint && lastSelectedPoint != -1)
+
+            if (lastSelectedPoint == currentlySelectedPoint || lastSelectedPoint == -1) return;
+            if (_pointsManager.PointsObjects.Count != lastSelectedPoint)
             {
                 _pointsManager.PointsObjects[lastSelectedPoint].GetComponent<MeshRenderer>().material.color = Color.white;
+                _pointsManager.PointsObjects[currentlySelectedPoint].GetComponent<MeshRenderer>().material.color = Color.red;
+            }
+            else
+            {
                 _pointsManager.PointsObjects[currentlySelectedPoint].GetComponent<MeshRenderer>().material.color = Color.red;
             }
         }
@@ -256,9 +273,9 @@ namespace CameraPlacements
     }
 
     class PointsManager : MonoBehaviour
-    {   //                Index Position Rotation FOV
-        public Dictionary<int, (Vector3, Vector3, float)> Points = new();
-        public Dictionary<int, GameObject> PointsObjects = new();
+    {
+        public readonly Dictionary<int, (Vector3, Vector3, float)> Points = new();
+        public readonly Dictionary<int, GameObject> PointsObjects = new();
         private CameraMenu _cameraMenu;
         private GameObject _conePrefab;
         private Camera _camera;
@@ -290,6 +307,7 @@ namespace CameraPlacements
             PointsObjects.Remove(index);
             for (var i = index; i < Points.Count; i++)
             {
+                Debug.Log(i);
                 Points[i] = Points[i + 1];
                 Points.Remove(i + 1);
                 PointsObjects[i] = PointsObjects[i + 1];
@@ -300,8 +318,10 @@ namespace CameraPlacements
         {
             if (PointsObjects.Count > 0)
             {
-                PointsObjects[_cameraMenu.currentlySelectedPoint].transform.position = Points[_cameraMenu.currentlySelectedPoint].Item1;
-                PointsObjects[_cameraMenu.currentlySelectedPoint].transform.eulerAngles = Points[_cameraMenu.currentlySelectedPoint].Item2;
+                PointsObjects[_cameraMenu.currentlySelectedPoint].transform.position =
+                    Points[_cameraMenu.currentlySelectedPoint].Item1;
+                PointsObjects[_cameraMenu.currentlySelectedPoint].transform.eulerAngles =
+                    Points[_cameraMenu.currentlySelectedPoint].Item2;
             }
         }
     }
