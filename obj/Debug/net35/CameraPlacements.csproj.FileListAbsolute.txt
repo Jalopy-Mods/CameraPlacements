@@ -13,3 +13,6 @@ D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Deb
 D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\obj\Debug\net35\CameraPlacements.csproj.CopyComplete
 D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\NetLegacySupport.Tuple.dll
 D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\Theraot.Core.dll
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\Assembly-UnityScript-firstpass.dll
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\Assembly-UnityScript.dll
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\UnityEditor.dll

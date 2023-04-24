@@ -23,6 +23,15 @@
 	<Reference Include="Assembly-CSharp"> 
 	<HintPath> lib\Assembly-CSharp.dll </HintPath> 
 	</Reference>
+	<Reference Include="Assembly-UnityScript-firstpass"> 
+	<HintPath> lib\Assembly-UnityScript-firstpass.dll </HintPath> 
+	</Reference>
+	<Reference Include="Assembly-UnityScript"> 
+	<HintPath> lib\Assembly-UnityScript.dll </HintPath> 
+	</Reference>
+	<Reference Include="UnityEditor"> 
+	<HintPath> lib\UnityEditor.dll </HintPath> 
+	</Reference>
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">

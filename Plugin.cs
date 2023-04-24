@@ -1,5 +1,6 @@
 ﻿using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+// using UnityEditor;
 using UnityEngine;
 using System.IO;
 using BepInEx;
@@ -11,6 +12,7 @@ namespace CameraPlacements;
 public class Plugin : BaseUnityPlugin
 {
     private CameraMenu _cameraMenu;
+    private GameObject _conePrefab;
     private MouseLook _locker0;
     private MouseLook _locker1;
 
@@ -18,6 +20,17 @@ public class Plugin : BaseUnityPlugin
     {
         // Plugin startup logic
         Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+        
+        var coneBundle = AssetBundle.LoadFromFile(Path.Combine(Application.dataPath, "assets"));
+        if (coneBundle == null)
+        {
+            Debug.LogError("Failed to load AssetBundle!");
+            return;
+        }
+
+        _conePrefab = Instantiate(coneBundle.LoadAsset<GameObject>("pointer-cone"));
+        DontDestroyOnLoad(_conePrefab);
+        coneBundle.Unload(false);
     }
     private void OnEnable()
     {
@@ -34,6 +47,7 @@ public class Plugin : BaseUnityPlugin
         if (scene.name.Equals("Scn2_CheckpointBravo") || scene.name.Equals("MainMenu"))
         {
             _cameraMenu = new GameObject("CameraMenu").AddComponent<CameraMenu>();
+            _cameraMenu.pointsManager.conePrefab = _conePrefab;
             _cameraMenu.GetComponent<CameraMenu>().enabled = false;
         }
 
@@ -80,14 +94,15 @@ public class Plugin : BaseUnityPlugin
 
 internal class CameraMenu : MonoBehaviour
 {
-    private Camera _newCamera;
-    private CameraManager _cameraManager;
-    private PointsManager _pointsManager;
+    private (Vector3, Vector3, float, int, int, float) _lastPoint;
     public int currentlySelectedPoint = -1;
+    private CameraManager _cameraManager;
+    private GradientColorKey[] _colorKey;
+    public PointsManager pointsManager;
     public LineRenderer lineRenderer;
     private Gradient _gradient;
-    private GradientColorKey[] _colorKey;
-    private (Vector3, Vector3, float, int, int) _lastPoint;
+    private Camera _newCamera;
+
     private void Awake()
     {
         _newCamera = new GameObject("FreeCamera").AddComponent<Camera>();
@@ -100,7 +115,7 @@ internal class CameraMenu : MonoBehaviour
                 GameObject.Find("/First Person Controller/Main Camera").transform.position;
         }
         _cameraManager = _newCamera.gameObject.AddComponent<CameraManager>();
-        _pointsManager = _newCamera.gameObject.AddComponent<PointsManager>();
+        pointsManager = _newCamera.gameObject.AddComponent<PointsManager>();
         _newCamera.gameObject.AddComponent<Rigidbody>().useGravity = false;
         _newCamera.enabled = false;
         lineRenderer = _newCamera.gameObject.AddComponent<LineRenderer>();
@@ -112,18 +127,20 @@ internal class CameraMenu : MonoBehaviour
             new[] { new(100, 0.0f), new(100, 0.0f), new GradientAlphaKey(100, 1.0f) }
         );
         lineRenderer.colorGradient = _gradient;
+        lineRenderer.startWidth = 0.5f;
+        lineRenderer.endWidth = 0.5f;
     }   
 
     private void OnGUI()
     {
         if (_cameraManager.animStarted) return;
-        GUI.Box(new Rect(5, Screen.height - 305, 500, 300), "Camera Control");
+        GUI.Box(new Rect(5, Screen.height - 255, 500, 300), "Camera Control");
         if (GUI.Button(new Rect(10, Screen.height - 70, 100, 60),"Switch view\nto freecam"))
         {
             _newCamera.enabled = !_newCamera.enabled;
         }
         if (GUI.Button(new Rect(10, Screen.height - 135, 100, 60), "Launch\nanimation") &&
-            _pointsManager.Points.Count > 1)
+            pointsManager.Points.Count > 1)
         {
             _cameraManager.StartAnimation();
         }
@@ -144,88 +161,128 @@ internal class CameraMenu : MonoBehaviour
             float.Parse(GUI.TextField(new Rect(300, Screen.height - 40, 60, 20), rotation.z + "")));
         _cameraManager.zLocked = GUI.Toggle(new Rect(365, Screen.height - 40, 100, 20), _cameraManager.zLocked,
             "Lock X&Z axis");
-        GUI.Label(new Rect(395, Screen.height - 305, 150, 20), "Camera FOV: "+ _newCamera.fieldOfView);
-        GUI.Label(new Rect(380, Screen.height - 288, 150, 20), "Freecam Speed: "+ _cameraManager.mSpeed);
+        GUI.Label(new Rect(395, Screen.height - 255, 150, 20), "Camera FOV: "+ _newCamera.fieldOfView);
+        GUI.Label(new Rect(380, Screen.height - 238, 150, 20), "Freecam Speed: "+ _cameraManager.mSpeed);
+
+        // var nEffect0 = GUI.Toggle(new Rect(115, Screen.height - 130, 100, 25), _cameraManager.Effects["Vignetting"], "Vignetting");
+        // var nEffect1 = GUI.Toggle(new Rect(115, Screen.height - 110, 100, 25), _cameraManager.Effects["BloomAndLensFlares"], "Bloom");
+        // var nEffect2 = GUI.Toggle(new Rect(115, Screen.height - 90, 100, 25), _cameraManager.Effects["SunShafts"], "Sun Shafts");
+        // var nEffect3 = GUI.Toggle(new Rect(215, Screen.height - 110, 100, 25), _cameraManager.Effects["SSAOPro"], "SSAO");
+        // var nEffect4 = GUI.Toggle(new Rect(215, Screen.height - 90, 100, 25), _cameraManager.Effects["AntialiasingAsPostEffect"], "Antialiasing");
+        //
+        // if (nEffect0 != _cameraManager.Effects["Vignetting"])
+        // {
+        //     _cameraManager.Effects["Vignetting"] = nEffect0;
+        //     if (_cameraManager.Effects["Vignetting"]) CameraManager.EnableEffect("Vignetting");
+        //     else CameraManager.DisableEffect("Vignetting");
+        // }
+        // if (nEffect1 != _cameraManager.Effects["BloomAndLensFlares"])
+        // {
+        //     _cameraManager.Effects["BloomAndLensFlares"] = nEffect1;
+        //     if (_cameraManager.Effects["BloomAndLensFlares"]) CameraManager.EnableEffect("BloomAndLensFlares");
+        //     else CameraManager.DisableEffect("BloomAndLensFlares");
+        // }
+        // if (nEffect2 != _cameraManager.Effects["SunShafts"])
+        // {
+        //     _cameraManager.Effects["SunShafts"] = nEffect2;
+        //     if (_cameraManager.Effects["SunShafts"]) CameraManager.EnableEffect("SunShafts");
+        //     else CameraManager.DisableEffect("SunShafts");
+        // }
+        // if (nEffect3 != _cameraManager.Effects["SSAOPro"])
+        // {
+        //     _cameraManager.Effects["SSAOPro"] = nEffect3;
+        //     if (_cameraManager.Effects["SSAOPro"]) CameraManager.EnableEffect("SSAOPro");
+        //     else CameraManager.DisableEffect("SSAOPro");
+        // }
+        // if (nEffect4 != _cameraManager.Effects["AntialiasingAsPostEffect"])
+        // {
+        //     _cameraManager.Effects["AntialiasingAsPostEffect"] = nEffect4;
+        //     if (_cameraManager.Effects["AntialiasingAsPostEffect"]) CameraManager.EnableEffect("AntialiasingAsPostEffect");
+        //     else CameraManager.DisableEffect("AntialiasingAsPostEffect");
+        // }
+        
             
         var lastSelectedPoint = currentlySelectedPoint;
-        if (_pointsManager.Points.Count > 0)
+        if (pointsManager.Points.Count > 0)
         {
-            _lastPoint = _pointsManager.Points[currentlySelectedPoint];
+            _lastPoint = pointsManager.Points[currentlySelectedPoint];
         }
-        GUI.Label(new Rect(10, Screen.height - 300, 150, 20), "Tracks Points: "+_pointsManager.Points.Count);
-        if (GUI.Button(new Rect(10, Screen.height - 275, 150, 20), "Add Point"))
+        GUI.Label(new Rect(10, Screen.height - 250, 150, 20), "Tracks Points: "+pointsManager.Points.Count);
+        if (GUI.Button(new Rect(10, Screen.height - 225, 150, 20), "Add Point"))
         {
-            if (_pointsManager.Points.Count > currentlySelectedPoint) currentlySelectedPoint++;
+            if (pointsManager.Points.Count > currentlySelectedPoint) currentlySelectedPoint++;
             var cameraTransform = _newCamera.transform;
-            _pointsManager.AddPoint(currentlySelectedPoint, cameraTransform.position, cameraTransform.eulerAngles,
+            pointsManager.AddPoint(currentlySelectedPoint, cameraTransform.position, cameraTransform.eulerAngles,
                 _newCamera.fieldOfView, _cameraManager.mSpeed);
-            lineRenderer.positionCount = _pointsManager.Points.Count;
-            for (var i = 0; i < _pointsManager.Points.Count; i++)
+            lineRenderer.positionCount = pointsManager.Points.Count;
+            for (var i = 0; i < pointsManager.Points.Count; i++)
             {
-                lineRenderer.SetPosition(i, _pointsManager.Points[i].Item1);
+                lineRenderer.SetPosition(i, pointsManager.Points[i].Item1);
             }
         }
 
-        if (GUI.Button(new Rect(345, Screen.height - 265, 150, 20), "Remove Point") &&
-            _pointsManager.Points.Count > 0)
+        if (GUI.Button(new Rect(345, Screen.height - 215, 150, 20), "Remove Point") &&
+            pointsManager.Points.Count > 0)
         {
-            _pointsManager.RemovePoint(currentlySelectedPoint);
+            pointsManager.RemovePoint(currentlySelectedPoint);
             if (currentlySelectedPoint > 0) currentlySelectedPoint--;
-            lineRenderer.positionCount = _pointsManager.Points.Count;
+            lineRenderer.positionCount = pointsManager.Points.Count;
         }
 
-        GUI.Label(new Rect(175, Screen.height - 287, 180, 20), "Currently Selected Point: "+currentlySelectedPoint);
-        currentlySelectedPoint = (int)GUI.HorizontalSlider(new Rect(180, Screen.height - 265, 150, 20),
+        GUI.Label(new Rect(175, Screen.height - 237, 180, 20), "Currently Selected Point: "+currentlySelectedPoint);
+        currentlySelectedPoint = (int)GUI.HorizontalSlider(new Rect(180, Screen.height - 215, 150, 20),
             currentlySelectedPoint, 0,
-            MinClamp(_pointsManager.Points.Count - 1, 0));
-        if (_pointsManager.Points.Count > 0)
+            MinClamp(pointsManager.Points.Count - 1, 0));
+        if (pointsManager.Points.Count > 0)
         {
-            GUI.Label(new Rect(10, Screen.height - 250, 50, 25), "Position");
-            GUI.Label(new Rect(10, Screen.height - 230, 50, 25), "Rotation");
-            GUI.Label(new Rect(10, Screen.height - 210, 50, 25), "FOV");
-            GUI.Label(new Rect(10, Screen.height - 190, 50, 25), "Speed");
-            var point = _pointsManager.Points[currentlySelectedPoint];
+            GUI.Label(new Rect(10, Screen.height - 200, 50, 25), "Position");
+            GUI.Label(new Rect(10, Screen.height - 180, 50, 25), "Rotation");
+            GUI.Label(new Rect(30, Screen.height - 160, 50, 25), "FOV");
+            GUI.Label(new Rect(152, Screen.height - 160, 50, 25), "Speed");
+            GUI.Label(new Rect(260, Screen.height - 160, 150, 20), "Wait time (ms)");
+            var point = pointsManager.Points[currentlySelectedPoint];
             float.TryParse(
-                GUI.TextField(new Rect(65, Screen.height - 230, 60, 20), point.Item2.x + ""), out var prx);
+                GUI.TextField(new Rect(65, Screen.height - 180, 60, 20), point.Item2.x + ""), out var prx);
             float.TryParse(
-                GUI.TextField(new Rect(130, Screen.height - 230, 60, 20), point.Item2.y + ""), out var pry);
+                GUI.TextField(new Rect(130, Screen.height - 180, 60, 20), point.Item2.y + ""), out var pry);
             float.TryParse(
-                GUI.TextField(new Rect(195, Screen.height - 230, 60, 20), point.Item2.z + ""), out var prz);
-            float.TryParse(GUI.TextField(new Rect(65, Screen.height - 250, 60, 20), point.Item1.x + ""),
+                GUI.TextField(new Rect(195, Screen.height - 180, 60, 20), point.Item2.z + ""), out var prz);
+            float.TryParse(GUI.TextField(new Rect(65, Screen.height - 200, 60, 20), point.Item1.x + ""),
                 out var ppx);
-            float.TryParse(GUI.TextField(new Rect(130, Screen.height - 250, 60, 20), point.Item1.y + ""),
+            float.TryParse(GUI.TextField(new Rect(130, Screen.height - 200, 60, 20), point.Item1.y + ""),
                 out var ppy);
-            float.TryParse(GUI.TextField(new Rect(195, Screen.height - 250, 60, 20), point.Item1.z + ""), 
+            float.TryParse(GUI.TextField(new Rect(195, Screen.height - 200, 60, 20), point.Item1.z + ""), 
                 out var ppz);
-            float.TryParse(GUI.TextField(new Rect(65, Screen.height - 210, 60, 20), point.Item3 + ""),
+            float.TryParse(GUI.TextField(new Rect(65, Screen.height - 160, 60, 20), point.Item3 + ""),
                 out var pFov);
-            int.TryParse(GUI.TextField(new Rect(65, Screen.height - 190, 60, 20), point.Item4 + ""),
+            int.TryParse(GUI.TextField(new Rect(195, Screen.height - 160, 60, 20), point.Item4 + ""),
                 out var pSpeed);
+            float.TryParse(GUI.TextField(new Rect(360, Screen.height - 160, 60, 20), point.Item6 + ""),
+                out var pWait);
 
-            var baseType = _pointsManager.Points[currentlySelectedPoint].Item5;
-            GUI.Label(new Rect(260, Screen.height - 230, 150, 20), "Animation mode:");
-            if (GUI.Toggle(new Rect(360, Screen.height - 230, 30, 20),
+            var baseType = pointsManager.Points[currentlySelectedPoint].Item5;
+            GUI.Label(new Rect(260, Screen.height - 180, 150, 20), "Animation mode:");
+            if (GUI.Toggle(new Rect(360, Screen.height - 180, 30, 20),
                     baseType == 0, "▲")) baseType = 0;
-            if (GUI.Toggle(new Rect(390, Screen.height - 230, 30, 20),
+            if (GUI.Toggle(new Rect(390, Screen.height - 180, 30, 20),
                     baseType == 1, "●")) baseType = 1;
-            if (GUI.Toggle(new Rect(420, Screen.height - 230, 30, 20),
+            if (GUI.Toggle(new Rect(420, Screen.height - 180, 30, 20),
                     baseType == 2, "■")) baseType = 2;
                 
-            _pointsManager.Points[currentlySelectedPoint] = (
+            pointsManager.Points[currentlySelectedPoint] = (
                 new Vector3(ppx, ppy, ppz), 
-                new Vector3( Clamp(prx, 359, 0), Clamp(pry, 359, 0), Clamp(prz, 359, 0)),
-                (int)Clamp(pFov, 175, 5),
-                (int)Clamp(pSpeed, 950, 0), baseType);
+                new Vector3( Clamp(prx, 359, 0), Clamp(pry, 359, -359), Clamp(prz, 359, -359)),
+                (int)Clamp(pFov, 175, 5), (int)Clamp(pSpeed, 950, 1), baseType, pWait);
                 
-            lineRenderer.SetPosition(currentlySelectedPoint, _pointsManager.Points[currentlySelectedPoint].Item1);
+            lineRenderer.SetPosition(currentlySelectedPoint, pointsManager.Points[currentlySelectedPoint].Item1);
         }
 
-        if (_pointsManager.Points.Count == 0) return;
-        if (currentlySelectedPoint == lastSelectedPoint && _pointsManager.Points[currentlySelectedPoint] != _lastPoint)
+        if (pointsManager.Points.Count == 0) return;
+        if (currentlySelectedPoint == lastSelectedPoint && pointsManager.Points[currentlySelectedPoint] != _lastPoint)
         {
-            var (fov, speed) = (_pointsManager.Points[currentlySelectedPoint].Item3,
-                _pointsManager.Points[currentlySelectedPoint].Item4);
-            _pointsManager.PointsObjects[currentlySelectedPoint].transform.localScale =
+            var (fov, speed) = (pointsManager.Points[currentlySelectedPoint].Item3,
+                pointsManager.Points[currentlySelectedPoint].Item4);
+            pointsManager.PointsObjects[currentlySelectedPoint].transform.localScale =
                 new Vector3(fov / 60 * 100, fov / 60 * 100, Clamp(speed, 150, 0) / 30 * 100);
         }
         if (lastSelectedPoint == currentlySelectedPoint || lastSelectedPoint == -1) return;
@@ -233,15 +290,15 @@ internal class CameraMenu : MonoBehaviour
         _gradient.SetKeys(_colorKey,new[] { new(100, 0.0f), new GradientAlphaKey(100, 1.0f)});
         lineRenderer.colorGradient = _gradient;
             
-        if (_pointsManager.PointsObjects.Count != lastSelectedPoint)
+        if (pointsManager.PointsObjects.Count != lastSelectedPoint)
         {
-            _pointsManager.PointsObjects[lastSelectedPoint].GetComponent<MeshRenderer>().material.color = Color.white;
-            _pointsManager.PointsObjects[currentlySelectedPoint].GetComponent<MeshRenderer>().material.color =
+            pointsManager.PointsObjects[lastSelectedPoint].GetComponent<MeshRenderer>().material.color = Color.white;
+            pointsManager.PointsObjects[currentlySelectedPoint].GetComponent<MeshRenderer>().material.color =
                 Color.blue;
         }
         else
         {
-            _pointsManager.PointsObjects[currentlySelectedPoint].GetComponent<MeshRenderer>().material.color =
+            pointsManager.PointsObjects[currentlySelectedPoint].GetComponent<MeshRenderer>().material.color =
                 Color.blue;
         }
     }
@@ -257,23 +314,32 @@ internal class CameraMenu : MonoBehaviour
 
 internal class CameraManager : MonoBehaviour
 {
-    public int mSpeed = 10;
-    private Rigidbody _mRigidbody;
-    private Camera _mCamera;
-    private CameraMenu _mCameraMenu;
     private PointsManager _pointsManager;
     private float _originalDistance;
-    public bool zLocked;
-    public bool animStarted;
-    private float _startTime;
+    private CameraMenu _mCameraMenu;
+    private Rigidbody _mRigidbody;
     private AnimationCurve _curve;
+    private float _startTime;
+    private Camera _mCamera;
+    public bool animStarted;
+    public int mSpeed = 10;
+    public bool zLocked;
 
+    // public readonly Dictionary<string, bool> Effects = new();
+
+    
     private void Start()
     {
         _mRigidbody = gameObject.GetComponent<Rigidbody>();
         _mCamera = gameObject.GetComponent<Camera>();
         _mCameraMenu = GameObject.Find("CameraMenu").GetComponent<CameraMenu>();
         _pointsManager = gameObject.GetComponent<PointsManager>();
+        // Effects.Add("Vignetting", false);
+        // Effects.Add("BloomAndLensFlares", false);
+        // Effects.Add("SunShafts", false);
+        // Effects.Add("SSAOPro", false);
+        // Effects.Add("AntialiasingAsPostEffect", false);
+        
     }
 
     public void StartAnimation()
@@ -288,7 +354,7 @@ internal class CameraManager : MonoBehaviour
         var p1 = _pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item1;
         _originalDistance =
             (float)Math.Sqrt(Math.Pow(p1.x - p0.x, 2) + Math.Pow(p1.y - p0.y, 2) + Math.Pow(p1.z - p0.z, 2));
-        _startTime = Time.time;
+        _startTime = Time.time + _pointsManager.Points[_mCameraMenu.currentlySelectedPoint-1].Item6/1000;
         for (var i = 0; i < _pointsManager.Points.Count; i++)
         {
             _pointsManager.PointsObjects[i].SetActive(false);
@@ -296,6 +362,16 @@ internal class CameraManager : MonoBehaviour
         SetCurve(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item5);
     }
 
+    public void StopAnimation()
+    {
+        animStarted = false;
+        _mCameraMenu.currentlySelectedPoint = 0;
+        _mCameraMenu.lineRenderer.enabled = true;
+        for (var i = 0; i < _pointsManager.Points.Count; i++)
+        {
+            _pointsManager.PointsObjects[i].SetActive(true);
+        }
+    }
     private void SetCurve(int type)
     {
         _curve = new AnimationCurve();
@@ -332,18 +408,15 @@ internal class CameraManager : MonoBehaviour
     {
         if (animStarted)
         {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                StopAnimation();
+                return;
+            }
+            
             var p0 = gameObject.transform.position;
             var p1 = _pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item1;
             var d = Math.Sqrt(Math.Pow(p1.x - p0.x, 2) + Math.Pow(p1.y - p0.y, 2) + Math.Pow(p1.z - p0.z, 2));
-            _mCamera.fieldOfView = Mathf.Lerp(
-                _pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item3,
-                _pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item3,
-                (float)(1 - d / _originalDistance));
-                
-            var curveValue = _curve.Evaluate((float)(1 - d / _originalDistance));
-            gameObject.transform.rotation = Quaternion.Lerp(
-                Quaternion.Euler(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item2),
-                Quaternion.Euler(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item2), curveValue);
                     
                 
             if (Math.Round(d) == 0 ||
@@ -353,34 +426,59 @@ internal class CameraManager : MonoBehaviour
                 _mCameraMenu.currentlySelectedPoint++;
                 if (_mCameraMenu.currentlySelectedPoint == _pointsManager.Points.Count)
                 {
-                    animStarted = false;
-                    _mCameraMenu.currentlySelectedPoint = 0;
-                    _mCameraMenu.lineRenderer.enabled = true;
-                    for (var i = 0; i < _pointsManager.Points.Count; i++)
-                    {
-                        _pointsManager.PointsObjects[i].SetActive(true);
-                    }
+                    StopAnimation();
                 }
                 else
                 {
                     p1 = _pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item1;
                     _originalDistance = (float)Math.Sqrt(Math.Pow(p1.x - p0.x, 2) + Math.Pow(p1.y - p0.y, 2) +
                                                          Math.Pow(p1.z - p0.z, 2));
-                    _startTime = Time.time;
+                    _startTime = Time.time + _pointsManager.Points[_mCameraMenu.currentlySelectedPoint-1].Item6/1000;
                     SetCurve(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item5);
                 }
             }
             else
             {
-                curveValue = _curve.Evaluate((Time.time - _startTime) *
+                var curve = _curve.Evaluate((Time.time - _startTime) *
                     _pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item4 / _originalDistance);
-                        
+                _mCamera.fieldOfView = Mathf.Lerp(
+                    _pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item3,
+                    _pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item3, curve);
+                gameObject.transform.rotation = Quaternion.Lerp(
+                    Quaternion.Euler(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item2),
+                    Quaternion.Euler(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item2), curve);
                 gameObject.transform.position = Vector3.Lerp(
                     _pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item1,
-                    _pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item1, curveValue);
+                    _pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item1, curve);
             }
             return;
         }
+
+        if (Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.RightShift) && Input.GetKey(KeyCode.Space))
+        {
+            if (_mCameraMenu.lineRenderer.enabled)
+            {
+                _mCameraMenu.lineRenderer.enabled = false;
+                _pointsManager.PointsObjects[_mCameraMenu.currentlySelectedPoint].SetActive(false);
+                gameObject.transform.position = _pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item1;
+                gameObject.transform.rotation =
+                    Quaternion.Euler(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item2);
+                _mCamera.fieldOfView = _pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item3;
+            }
+            else
+            {
+                var o = gameObject;
+                var p = _pointsManager.Points[_mCameraMenu.currentlySelectedPoint];
+                _pointsManager.Points[_mCameraMenu.currentlySelectedPoint] = (o.transform.position,
+                    o.transform.rotation.eulerAngles, _mCamera.fieldOfView, p.Item4, p.Item5, p.Item6);
+            }
+        }
+        else if (_mCameraMenu.lineRenderer.enabled == false)
+        {
+            _mCameraMenu.lineRenderer.enabled = true;
+            _pointsManager.PointsObjects[_mCameraMenu.currentlySelectedPoint].SetActive(true);
+        }
+        
         var rot = transform.rotation;
         if (Input.GetKey(KeyCode.UpArrow))
         {
@@ -395,6 +493,9 @@ internal class CameraManager : MonoBehaviour
         else if (Input.GetKey(KeyCode.LeftArrow))
         {
             _mRigidbody.velocity = -transform.right * mSpeed;
+        } else if (Input.GetKey(KeyCode.Space) && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+        {
+            _mRigidbody.velocity = transform.up * mSpeed;
         }
         else
         {
@@ -448,25 +549,28 @@ internal class CameraManager : MonoBehaviour
             }
         }
     }
+
+    public static void EnableEffect(string effect)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static void DisableEffect(string effect)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 internal class PointsManager : MonoBehaviour
 {
-    public readonly Dictionary<int, (Vector3, Vector3, float, int, int)> Points = new();
+    public readonly Dictionary<int, (Vector3, Vector3, float, int, int, float)> Points = new();
     public readonly Dictionary<int, GameObject> PointsObjects = new();
     private CameraMenu _cameraMenu;
-    private GameObject _conePrefab;
+    public GameObject conePrefab;
     private void Awake()
     {
         _cameraMenu = GameObject.Find("CameraMenu").GetComponent<CameraMenu>();
-        var coneBundle = AssetBundle.LoadFromFile(Path.Combine(Application.dataPath, "assets"));
-        if (coneBundle == null)
-        {
-            Debug.LogError("Failed to load AssetBundle!");
-            return;
-        }
-        _conePrefab = coneBundle.LoadAsset<GameObject>("pointer-cone");
-        coneBundle.Unload(false);
+        
     }
     public void AddPoint(int index, Vector3 position, Vector3 rotation, float fov, int speed)
     {
@@ -479,10 +583,9 @@ internal class PointsManager : MonoBehaviour
                 PointsObjects[i] = PointsObjects[i - 1];
                 PointsObjects.Remove(i - 1);
             }
-                
         }
-        Points[index] = (position, rotation, fov, speed, 0);
-        PointsObjects[index] = Instantiate(_conePrefab);
+        Points[index] = (position, rotation, fov, speed, 0, 0.0f);
+        PointsObjects[index] = Instantiate(conePrefab);
         PointsObjects[index].transform.position = position;
         PointsObjects[index].transform.eulerAngles = rotation;
         PointsObjects[index].transform.localScale =
