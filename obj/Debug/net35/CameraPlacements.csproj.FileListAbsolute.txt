@@ -16,3 +16,4 @@ D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Deb
 D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\Assembly-UnityScript-firstpass.dll
 D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\Assembly-UnityScript.dll
 D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\UnityEditor.dll
+D:\SteamLibrary\steamapps\common\Jalopy\BepInEx\plugins\CameraPlacements\bin\Debug\net35\Newtonsoft.Json.dll

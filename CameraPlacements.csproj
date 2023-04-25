@@ -14,6 +14,7 @@
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
     <PackageReference Include="NetLegacySupport.Tuple" Version="1.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Theraot.Core" Version="3.2.11" />
     <PackageReference Include="UnityEngine.Modules" Version="2017.4.23" IncludeAssets="compile" />
 

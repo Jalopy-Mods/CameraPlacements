@@ -1,10 +1,14 @@
 ﻿using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 // using UnityEditor;
+using System.Linq;
 using UnityEngine;
 using System.IO;
 using BepInEx;
 using System;
+using System.Text.RegularExpressions;
+using JetBrains.Annotations;
+
 
 namespace CameraPlacements;
 
@@ -18,7 +22,6 @@ public class Plugin : BaseUnityPlugin
 
     private void Awake()
     {
-        // Plugin startup logic
         Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
         
         var coneBundle = AssetBundle.LoadFromFile(Path.Combine(Application.dataPath, "assets"));
@@ -74,7 +77,7 @@ public class Plugin : BaseUnityPlugin
     {
         if (SceneManager.GetActiveScene().name != "Scn2_CheckpointBravo" &&
             SceneManager.GetActiveScene().name != "MainMenu") return;
-        if (Input.GetKeyDown(KeyCode.F10))
+        if (Input.GetKeyDown(KeyCode.F10) && !_cameraMenu.saveManagerOpen)
         {
             _cameraMenu.enabled = !_cameraMenu.enabled;
             if (_cameraMenu.enabled && SceneManager.GetActiveScene().name == "Scn2_CheckpointBravo")
@@ -100,8 +103,13 @@ internal class CameraMenu : MonoBehaviour
     private GradientColorKey[] _colorKey;
     public PointsManager pointsManager;
     public LineRenderer lineRenderer;
+    private Vector2 _scrollPosition;
+    private Regex _groupNameRegex;
+    public bool saveManagerOpen;
     private Gradient _gradient;
+    private string _saveError;
     private Camera _newCamera;
+    private bool _keyHide;
 
     private void Awake()
     {
@@ -129,40 +137,112 @@ internal class CameraMenu : MonoBehaviour
         lineRenderer.colorGradient = _gradient;
         lineRenderer.startWidth = 0.5f;
         lineRenderer.endWidth = 0.5f;
+        _groupNameRegex = new Regex("[^a-zA-Z0-9 _-]");
+        saveManagerOpen = false;
+
     }   
 
     private void OnGUI()
     {
-        if (_cameraManager.animStarted) return;
-        GUI.Box(new Rect(5, Screen.height - 255, 500, 300), "Camera Control");
+        if ((Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.LeftControl)) &&
+            Input.GetKeyDown(KeyCode.F10)) _keyHide = !_keyHide;
+        
+        if (saveManagerOpen)
+        {
+            var sw = Screen.width / 2;
+            var sh = Screen.height / 2;
+            GUI.Box(new Rect(sw - 200, sh - 200, 400, 400), "Save menu");
+            if (GUI.Button(new Rect(sw - 195, sh - 195, 50, 25), "Close")) saveManagerOpen = false;
+            
+            _scrollPosition = GUI.BeginScrollView(new Rect(sw - 200, sh - 180, 400, 380), _scrollPosition, new Rect(0, 0, 400, 400));
+            var saves = SaveSystem.GetSaves();
+            for (var i = 0; i < saves.Count; i++)
+            {
+                GUI.Label(new Rect(5, 10 + i * 30, 275, 25), saves[i]);
+                if (GUI.Button(new Rect(280, 10 + i * 30, 40, 25), "Load"))
+                {
+                    // pointsManager.UnloadPoints();
+                    pointsManager.Points.Clear();
+                    pointsManager.PointsObjects.Clear();
+                    foreach (var p in SaveSystem.LoadPoints(saves[i]))
+                    {
+                        Debug.Log(p.Key + " "+ p.Value.Item1 + " " + p.Value.Item2 + " " + p.Value.Item3 + " " + p.Value.Item4 + " " + p.Value.Item5 + " " + p.Value.Item6);
+                        pointsManager.AddPoint(p.Key, p.Value.Item1, p.Value.Item2, p.Value.Item3, p.Value.Item4, p.Value.Item5, (int)p.Value.Item6);
+                    }
+                    // pointsManager.ReloadPoints();
+                    currentlySelectedPoint = pointsManager.Points.Count - 1;
+                    lineRenderer.positionCount = pointsManager.Points.Count;
+                    for (var u = 0; u < pointsManager.Points.Count; u++)
+                    {
+                        lineRenderer.SetPosition(u, pointsManager.Points[u].Item1);
+                    }
+                    saveManagerOpen = false;
+                }
+                if (GUI.Button(new Rect(325, 10 + i * 30, 60, 25), "Delete"))
+                {
+                    SaveSystem.DeleteSave(saves[i]);
+                }
+            }
+            GUI.EndScrollView();
+        } 
+        if (_cameraManager.animStarted || saveManagerOpen) return;
+        GUI.Box(new Rect(5, Screen.height - 255, 470, 300), "Camera Control");
         if (GUI.Button(new Rect(10, Screen.height - 70, 100, 60),"Switch view\nto freecam"))
         {
             _newCamera.enabled = !_newCamera.enabled;
         }
         if (GUI.Button(new Rect(10, Screen.height - 135, 100, 60), "Launch\nanimation") &&
-            pointsManager.Points.Count > 1)
-        {
-            _cameraManager.StartAnimation();
-        }
+            pointsManager.Points.Count > 1) _cameraManager.StartAnimation();
 
         var transform1 = _newCamera.transform;
         var position = transform1.position;
         var rotation = transform1.eulerAngles;
             
         GUI.Label(new Rect(115, Screen.height - 60, 50, 25), "Position");
-        _newCamera.transform.position = new Vector3(
-            float.Parse(GUI.TextField(new Rect(170, Screen.height - 60, 60, 20), position.x + "")),
-            float.Parse(GUI.TextField(new Rect(235, Screen.height - 60, 60, 20), position.y + "")),
-            float.Parse(GUI.TextField(new Rect(300, Screen.height - 60, 60, 20), position.z + "")));
+        float.TryParse(GUI.TextField(new Rect(170, Screen.height - 60, 60, 20), position.x + ""), out var cPx);
+        float.TryParse(GUI.TextField(new Rect(235, Screen.height - 60, 60, 20), position.y + ""), out var cPy);
+        float.TryParse(GUI.TextField(new Rect(300, Screen.height - 60, 60, 20), position.z + ""), out var cPz);
+        
         GUI.Label(new Rect(115, Screen.height - 40, 50, 25), "Rotation");
-        _newCamera.transform.eulerAngles = new Vector3(
-            float.Parse(GUI.TextField(new Rect(170, Screen.height - 40, 60, 20), rotation.x + "")),
-            float.Parse(GUI.TextField(new Rect(235, Screen.height - 40, 60, 20), rotation.y + "")),
-            float.Parse(GUI.TextField(new Rect(300, Screen.height - 40, 60, 20), rotation.z + "")));
+        float.TryParse(GUI.TextField(new Rect(170, Screen.height - 40, 60, 20), rotation.x + ""), out var cRx);
+        float.TryParse(GUI.TextField(new Rect(235, Screen.height - 40, 60, 20), rotation.y + ""), out var cRy);
+        float.TryParse(GUI.TextField(new Rect(300, Screen.height - 40, 60, 20), rotation.z + ""), out var cRz);
+
+        transform1.position = new Vector3(cPx, cPy, cPz);
+        transform1.eulerAngles = new Vector3(cRx, cRy, cRz);
+        
         _cameraManager.zLocked = GUI.Toggle(new Rect(365, Screen.height - 40, 100, 20), _cameraManager.zLocked,
             "Lock X&Z axis");
-        GUI.Label(new Rect(395, Screen.height - 255, 150, 20), "Camera FOV: "+ _newCamera.fieldOfView);
-        GUI.Label(new Rect(380, Screen.height - 238, 150, 20), "Freecam Speed: "+ _cameraManager.mSpeed);
+        GUI.Label(new Rect(365, Screen.height - 255, 150, 20), "Camera FOV: "+ _newCamera.fieldOfView);
+        GUI.Label(new Rect(350, Screen.height - 238, 150, 20), "Freecam Speed: "+ _cameraManager.mSpeed);
+
+        GUI.Label(new Rect(115, Screen.height - 110, 200, 20), _saveError,
+            _saveError == "Saved!"
+                ? new GUIStyle { normal = { textColor = Color.green } }
+                : new GUIStyle { normal = { textColor = Color.red } });
+        GUI.Label(new Rect(115, Screen.height - 85, 120, 20),"Group Point Name: ");
+        pointsManager.currentGroupPointName = _groupNameRegex.Replace(GUI.TextField(
+            new Rect(235, Screen.height - 85, 125, 20),
+            pointsManager.currentGroupPointName), "").Truncate(20);
+        if (GUI.Button(new Rect(365, Screen.height - 85, 50, 20), "Save"))
+        {
+            if (pointsManager.currentGroupPointName == "")
+            {
+                _saveError = "Your save must have more than 0 characters!";
+            }
+            else if (SaveSystem.GetSaveThatContain(pointsManager.currentGroupPointName).Count != 0 &&
+                     _saveError != "This name is already taken! Click save again to erase.")
+            {
+                _saveError = "This name is already taken! Click save again to erase.";
+            } 
+            else
+            {
+                _saveError = "Saved!";
+                SaveSystem.SavePoints(pointsManager.currentGroupPointName, pointsManager.Points);
+            }
+        }
+
+        if (GUI.Button(new Rect(365, Screen.height - 60, 100, 20), "Manage Saves")) saveManagerOpen = true;
 
         // var nEffect0 = GUI.Toggle(new Rect(115, Screen.height - 130, 100, 25), _cameraManager.Effects["Vignetting"], "Vignetting");
         // var nEffect1 = GUI.Toggle(new Rect(115, Screen.height - 110, 100, 25), _cameraManager.Effects["BloomAndLensFlares"], "Bloom");
@@ -211,8 +291,7 @@ internal class CameraMenu : MonoBehaviour
         if (GUI.Button(new Rect(10, Screen.height - 225, 150, 20), "Add Point"))
         {
             if (pointsManager.Points.Count > currentlySelectedPoint) currentlySelectedPoint++;
-            var cameraTransform = _newCamera.transform;
-            pointsManager.AddPoint(currentlySelectedPoint, cameraTransform.position, cameraTransform.eulerAngles,
+            pointsManager.AddPoint(currentlySelectedPoint, transform1.position, transform1.eulerAngles,
                 _newCamera.fieldOfView, _cameraManager.mSpeed);
             lineRenderer.positionCount = pointsManager.Points.Count;
             for (var i = 0; i < pointsManager.Points.Count; i++)
@@ -221,7 +300,7 @@ internal class CameraMenu : MonoBehaviour
             }
         }
 
-        if (GUI.Button(new Rect(345, Screen.height - 215, 150, 20), "Remove Point") &&
+        if (GUI.Button(new Rect(345, Screen.height - 215, 120, 20), "Remove Point") &&
             pointsManager.Points.Count > 0)
         {
             pointsManager.RemovePoint(currentlySelectedPoint);
@@ -311,7 +390,14 @@ internal class CameraMenu : MonoBehaviour
         return value < min ? min : value;
     }
 }
-
+public static class StringExt
+{
+    [CanBeNull]
+    public static string Truncate([CanBeNull] this string value, int maxLength, string truncationSuffix = "…")
+    {
+        return value?.Length > maxLength ? value[..maxLength] + truncationSuffix : value;
+    }
+}
 internal class CameraManager : MonoBehaviour
 {
     private PointsManager _pointsManager;
@@ -392,6 +478,7 @@ internal class CameraManager : MonoBehaviour
                 _curve.AddKey(0.7f, 0.82f);
                 _curve.AddKey(0.8f, 0.92f);
                 _curve.AddKey(0.9f, 0.98f);
+                _curve.AddKey(0.95f, 1.0f);
                 _curve.AddKey(1.0f, 1.0f);
                 break;
             case 2:
@@ -562,17 +649,41 @@ internal class CameraManager : MonoBehaviour
 }
 
 internal class PointsManager : MonoBehaviour
-{
-    public readonly Dictionary<int, (Vector3, Vector3, float, int, int, float)> Points = new();
-    public readonly Dictionary<int, GameObject> PointsObjects = new();
+{                                  //position, rotation, fov, speed, type, time
+    public Dictionary<int, (Vector3, Vector3, float, int, int, float)> Points = new();
+    public Dictionary<int, GameObject> PointsObjects = new();
     private CameraMenu _cameraMenu;
     public GameObject conePrefab;
+    public string currentGroupPointName;
+
     private void Awake()
     {
+        currentGroupPointName = "New Group " + SaveSystem.GetSaveThatContain("New Group").Count;
         _cameraMenu = GameObject.Find("CameraMenu").GetComponent<CameraMenu>();
-        
     }
-    public void AddPoint(int index, Vector3 position, Vector3 rotation, float fov, int speed)
+    public void ReloadPoints()
+    {
+        foreach (var point in PointsObjects)
+        {
+            Destroy(point.Value);
+        }
+
+        PointsObjects = new Dictionary<int, GameObject>();
+        foreach (var point in Points)
+        {
+            PointsObjects[point.Key] = Instantiate(conePrefab);
+            PointsObjects[point.Key].transform.position = point.Value.Item1;
+            PointsObjects[point.Key].transform.eulerAngles = point.Value.Item2;
+        }
+    }
+    public void UnloadPoints()
+    {
+        foreach (var point in PointsObjects)
+        {
+            Destroy(point.Value);
+        }
+    }
+    public void AddPoint(int index, Vector3 position, Vector3 rotation, float fov, int speed, int type = 0, int time = 0)
     {
         if (Points.ContainsKey(index))
         {
@@ -584,7 +695,7 @@ internal class PointsManager : MonoBehaviour
                 PointsObjects.Remove(i - 1);
             }
         }
-        Points[index] = (position, rotation, fov, speed, 0, 0.0f);
+        Points[index] = (position, rotation, fov, speed, type, time);
         PointsObjects[index] = Instantiate(conePrefab);
         PointsObjects[index].transform.position = position;
         PointsObjects[index].transform.eulerAngles = rotation;
@@ -617,5 +728,103 @@ internal class PointsManager : MonoBehaviour
             Points[_cameraMenu.currentlySelectedPoint].Item1;
         PointsObjects[_cameraMenu.currentlySelectedPoint].transform.eulerAngles =
             Points[_cameraMenu.currentlySelectedPoint].Item2;
+    }
+}
+
+internal abstract class SaveSystem
+{
+    public static void DeleteSave(string saveName)
+    {
+        File.Delete(Path.Combine(Application.persistentDataPath, @"ModSaves\CameraPoints\" + saveName + ".json"));
+    } 
+    public static List<string> GetSaves()
+    {
+        if (!Directory.Exists(Path.Combine(Application.persistentDataPath, "ModSaves"))) Directory.CreateDirectory(Path.Combine(Application.persistentDataPath, "ModSaves"));
+        if (!Directory.Exists(Path.Combine(Application.persistentDataPath, @"ModSaves\CameraPoints"))) Directory.CreateDirectory(Path.Combine(Application.persistentDataPath, @"ModSaves\CameraPoints"));
+        return Directory.GetFiles(Path.Combine(Application.persistentDataPath, @"ModSaves\CameraPoints")).Select(Path.GetFileNameWithoutExtension).ToList();
+    }
+    private static string PointToString((Vector3, Vector3, float, int, int, float) point)
+    {
+        var fString = "";
+        fString += "(" + point.Item1.x + "!" + point.Item1.y + "!" + point.Item1.z + ");";
+        fString += "(" + point.Item2.x + "!" + point.Item2.y + "!" + point.Item2.z + ");";
+        fString += point.Item3 + ";";
+        fString += point.Item4 + ";";
+        fString += point.Item5 + ";";
+        fString += point.Item6 + ";";
+        
+        return fString;
+    }
+    public static List<string> GetSaveThatContain(string contain)
+    {
+        if (!Directory.Exists(Path.Combine(Application.persistentDataPath, "ModSaves")))
+        {
+            Directory.CreateDirectory(Path.Combine(Application.persistentDataPath, "ModSaves"));
+        }
+        if (!Directory.Exists(Path.Combine(Application.persistentDataPath, @"ModSaves\CameraPoints")))
+        {
+            Directory.CreateDirectory(Path.Combine(Application.persistentDataPath, @"ModSaves\CameraPoints"));
+        }
+
+        return Directory.GetFiles(Path.Combine(Application.persistentDataPath, @"ModSaves\CameraPoints")).Where(file => file.Contains(contain)).ToList();
+    }
+    public static void SavePoints(string groupName, Dictionary<int, (Vector3, Vector3, float, int, int, float)> points)
+    {
+        SettingsValues settingsValues = new();
+        foreach (var p in points) settingsValues.Add(p.Key, PointToString(p.Value));
+        if (!Directory.Exists(Path.Combine(Application.persistentDataPath, "ModSaves"))) Directory.CreateDirectory(Path.Combine(Application.persistentDataPath, "ModSaves"));
+        if (!Directory.Exists(Path.Combine(Application.persistentDataPath, @"ModSaves\CameraPoints"))) Directory.CreateDirectory(Path.Combine(Application.persistentDataPath, @"ModSaves\CameraPoints"));
+        File.WriteAllText(Path.Combine(Application.persistentDataPath, $@"ModSaves\CameraPoints\{groupName}.json"), JsonUtility.ToJson(settingsValues, true));
+    }
+
+    public static Dictionary<int, (Vector3, Vector3, float, int, int, float)> LoadPoints(string groupName)
+    {
+        // Load the file
+        var settingsValues = JsonUtility.FromJson<SettingsValues>(File.ReadAllText(Path.Combine(Application.persistentDataPath, $@"ModSaves\CameraPoints\{groupName}.json")));
+        var points = new Dictionary<int, (Vector3, Vector3, float, int, int, float)>();
+        foreach (var p in settingsValues)
+        {
+            var split = p.Value.Split(';');
+            var position = split[0].Replace("(", "").Replace(")", "").Split('!');
+            var rotation = split[1].Replace("(", "").Replace(")", "").Split('!');
+            points[p.Key] = (new Vector3(float.Parse(position[0]), float.Parse(position[1]), float.Parse(position[2])), new Vector3(float.Parse(rotation[0]), float.Parse(rotation[1]), float.Parse(rotation[2])), float.Parse(split[2]), int.Parse(split[3]), int.Parse(split[4]), float.Parse(split[5]));
+        }
+        return points;
+    }
+}
+[Serializable] internal class SettingsValues : SerializableDictionary<int, string> {}
+[Serializable]
+public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, ISerializationCallbackReceiver
+{
+    [SerializeField]
+    private List<TKey> keys = new();
+
+    [SerializeField]
+    private List<TValue> values = new();
+
+    // save the dictionary to lists
+    public void OnBeforeSerialize()
+    {
+        keys.Clear();
+        values.Clear();
+        foreach (var pair in this)
+        {
+            keys.Add(pair.Key);
+            values.Add(pair.Value);
+        }
+    }
+
+    // load dictionary from lists
+    public void OnAfterDeserialize()
+    {
+        Clear();
+
+        if (keys.Count != values.Count)
+            Debug.LogError(
+                $"there are {keys.Count} keys and {values.Count} values after deserialization. " +
+                "Make sure that both key and value types are serializable.");
+
+        for (var i = 0; i < keys.Count; i++)
+            Add(keys[i], values[i]);
     }
 }

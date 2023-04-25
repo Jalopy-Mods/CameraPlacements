@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "VtFyolx2Fi7h+Si7agopqyY03LvrHBGUBWVaFDvFQxOVESJhfIhIqd4sefIP9TKN3a2EawOt99cKoSroDvxTFA==",
+  "dgSpecHash": "anGM5kz5xGx7s1qmHGO/Tc54ybSis39kLLYeOINtY7WFS//NxAb1qjU28XfS7vd34eMAiM0X1GfsPwlZuydeFA==",
   "success": true,
   "projectFilePath": "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\CameraPlacements.csproj",
   "expectedPackageFiles": [
@@ -15,6 +15,7 @@
     "C:\\Users\\MeblIkea\\.nuget\\packages\\monomod.runtimedetour\\21.12.13.1\\monomod.runtimedetour.21.12.13.1.nupkg.sha512",
     "C:\\Users\\MeblIkea\\.nuget\\packages\\monomod.utils\\21.12.13.1\\monomod.utils.21.12.13.1.nupkg.sha512",
     "C:\\Users\\MeblIkea\\.nuget\\packages\\netlegacysupport.tuple\\1.1.1\\netlegacysupport.tuple.1.1.1.nupkg.sha512",
+    "C:\\Users\\MeblIkea\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
     "C:\\Users\\MeblIkea\\.nuget\\packages\\theraot.core\\3.2.11\\theraot.core.3.2.11.nupkg.sha512",
     "C:\\Users\\MeblIkea\\.nuget\\packages\\unityengine.modules\\2017.4.23\\unityengine.modules.2017.4.23.nupkg.sha512"
   ],
