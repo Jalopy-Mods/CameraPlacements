@@ -24,7 +24,7 @@ public class Plugin : BaseUnityPlugin
     {
         Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
         
-        var coneBundle = AssetBundle.LoadFromFile(Path.Combine(Application.dataPath, "assets"));
+        var coneBundle = AssetBundle.LoadFromFile(Path.Combine(Application.dataPath, "CameraPlacementsAssets"));
         if (coneBundle == null)
         {
             Debug.LogError("Failed to load AssetBundle!");
@@ -161,15 +161,10 @@ internal class CameraMenu : MonoBehaviour
                 GUI.Label(new Rect(5, 10 + i * 30, 275, 25), saves[i]);
                 if (GUI.Button(new Rect(280, 10 + i * 30, 40, 25), "Load"))
                 {
-                    // pointsManager.UnloadPoints();
+                    pointsManager.UnloadPoints();
                     pointsManager.Points.Clear();
                     pointsManager.PointsObjects.Clear();
-                    foreach (var p in SaveSystem.LoadPoints(saves[i]))
-                    {
-                        Debug.Log(p.Key + " "+ p.Value.Item1 + " " + p.Value.Item2 + " " + p.Value.Item3 + " " + p.Value.Item4 + " " + p.Value.Item5 + " " + p.Value.Item6);
-                        pointsManager.AddPoint(p.Key, p.Value.Item1, p.Value.Item2, p.Value.Item3, p.Value.Item4, p.Value.Item5, (int)p.Value.Item6);
-                    }
-                    // pointsManager.ReloadPoints();
+                    foreach (var p in SaveSystem.LoadPoints(saves[i])) pointsManager.AddPoint(p.Key, p.Value.Item1, p.Value.Item2, p.Value.Item3, p.Value.Item4, p.Value.Item5, (int)p.Value.Item6);
                     currentlySelectedPoint = pointsManager.Points.Count - 1;
                     lineRenderer.positionCount = pointsManager.Points.Count;
                     for (var u = 0; u < pointsManager.Points.Count; u++)
