@@ -1,13 +1,13 @@
-﻿using UnityEngine.SceneManagement;
+﻿using System.Text.RegularExpressions;
+using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 // using UnityEditor;
 using System.Linq;
 using UnityEngine;
 using System.IO;
 using BepInEx;
 using System;
-using System.Text.RegularExpressions;
-using JetBrains.Annotations;
 
 
 namespace CameraPlacements;
@@ -402,6 +402,7 @@ internal class CameraManager : MonoBehaviour
     private AnimationCurve _curve;
     private float _startTime;
     private Camera _mCamera;
+    private GameObject _oCamera;
     public bool animStarted;
     public int mSpeed = 10;
     public bool zLocked;
@@ -420,7 +421,7 @@ internal class CameraManager : MonoBehaviour
         // Effects.Add("SunShafts", false);
         // Effects.Add("SSAOPro", false);
         // Effects.Add("AntialiasingAsPostEffect", false);
-        
+        _oCamera = GameObject.Find("Main Camera");
     }
 
     public void StartAnimation()
@@ -441,6 +442,7 @@ internal class CameraManager : MonoBehaviour
             _pointsManager.PointsObjects[i].SetActive(false);
         }
         SetCurve(_pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item5);
+        _oCamera.SetActive(false);
     }
 
     public void StopAnimation()
@@ -452,6 +454,7 @@ internal class CameraManager : MonoBehaviour
         {
             _pointsManager.PointsObjects[i].SetActive(true);
         }
+        _oCamera.SetActive(true);
     }
     private void SetCurve(int type)
     {
@@ -501,7 +504,7 @@ internal class CameraManager : MonoBehaviour
             var d = Math.Sqrt(Math.Pow(p1.x - p0.x, 2) + Math.Pow(p1.y - p0.y, 2) + Math.Pow(p1.z - p0.z, 2));
                     
                 
-            if (Math.Round(d) == 0 ||
+            if (d < 0.2 ||
                 (_pointsManager.Points[_mCameraMenu.currentlySelectedPoint - 1].Item4 > 100 && d < 5))
             {
                 _mCamera.fieldOfView = _pointsManager.Points[_mCameraMenu.currentlySelectedPoint].Item3;
