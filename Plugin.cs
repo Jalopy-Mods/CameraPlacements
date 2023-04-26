@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using BepInEx.Configuration;
 using JetBrains.Annotations;
 // using UnityEditor;
 using System.Linq;
@@ -19,6 +20,7 @@ public class Plugin : BaseUnityPlugin
     private GameObject _conePrefab;
     private MouseLook _locker0;
     private MouseLook _locker1;
+    public static Dictionary<string, ConfigEntry<KeyboardShortcut>> KeyBinds;
 
     private void Awake()
     {
@@ -30,11 +32,22 @@ public class Plugin : BaseUnityPlugin
             Debug.LogError("Failed to load AssetBundle!");
             return;
         }
+        KeyBinds = new Dictionary<string, ConfigEntry<KeyboardShortcut>>
+        {
+            { "OpenMenu", Config.Bind("Hotkeys", "OpenMenu", new KeyboardShortcut(KeyCode.F10)) },
+            { "MoveForward", Config.Bind("Hotkeys", "MoveForward", new KeyboardShortcut(KeyCode.UpArrow)) },
+            { "MoveBackward", Config.Bind("Hotkeys", "MoveBackward", new KeyboardShortcut(KeyCode.DownArrow)) },
+            { "MoveLeft", Config.Bind("Hotkeys", "MoveLeft", new KeyboardShortcut(KeyCode.LeftArrow)) },
+            { "MoveRight", Config.Bind("Hotkeys", "MoveRight", new KeyboardShortcut(KeyCode.RightArrow)) },
+            { "MoveUp", Config.Bind("Hotkeys", "MoveUp", new KeyboardShortcut(KeyCode.Space)) },
+            { "ControlPoint", Config.Bind("Hotkeys", "PreviewPoint", new KeyboardShortcut(KeyCode.Space)) }
+        };
 
         _conePrefab = Instantiate(coneBundle.LoadAsset<GameObject>("pointer-cone"));
         DontDestroyOnLoad(_conePrefab);
         coneBundle.Unload(false);
     }
+
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -44,7 +57,7 @@ public class Plugin : BaseUnityPlugin
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
-        
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (scene.name.Equals("Scn2_CheckpointBravo") || scene.name.Equals("MainMenu"))
@@ -52,8 +65,8 @@ public class Plugin : BaseUnityPlugin
             _cameraMenu = new GameObject("CameraMenu").AddComponent<CameraMenu>();
             _cameraMenu.pointsManager.conePrefab = _conePrefab;
             _cameraMenu.GetComponent<CameraMenu>().enabled = false;
+            // I want to give this  value to this object: _toggleMenu
         }
-
         if (!scene.name.Equals("Scn2_CheckpointBravo")) return;
         _locker0 = GameObject.Find("/First Person Controller").GetComponent<MouseLook>();
         _locker1 = GameObject.Find("/First Person Controller/Main Camera").GetComponent<MouseLook>();
@@ -109,7 +122,6 @@ internal class CameraMenu : MonoBehaviour
     private Gradient _gradient;
     private string _saveError;
     private Camera _newCamera;
-    private bool _keyHide;
 
     private void Awake()
     {
@@ -144,9 +156,6 @@ internal class CameraMenu : MonoBehaviour
 
     private void OnGUI()
     {
-        if ((Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.LeftControl)) &&
-            Input.GetKeyDown(KeyCode.F10)) _keyHide = !_keyHide;
-        
         if (saveManagerOpen)
         {
             var sw = Screen.width / 2;
@@ -179,8 +188,9 @@ internal class CameraMenu : MonoBehaviour
                 }
             }
             GUI.EndScrollView();
-        } 
+        }
         if (_cameraManager.animStarted || saveManagerOpen) return;
+        
         GUI.Box(new Rect(5, Screen.height - 255, 470, 300), "Camera Control");
         if (GUI.Button(new Rect(10, Screen.height - 70, 100, 60),"Switch view\nto freecam"))
         {
@@ -406,7 +416,7 @@ internal class CameraManager : MonoBehaviour
     public bool animStarted;
     public int mSpeed = 10;
     public bool zLocked;
-
+    
     // public readonly Dictionary<string, bool> Effects = new();
 
     
@@ -539,7 +549,8 @@ internal class CameraManager : MonoBehaviour
             return;
         }
 
-        if (Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.RightShift) && Input.GetKey(KeyCode.Space))
+        if ((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) &&
+            Input.GetKey(Plugin.KeyBinds["ControlPoint"].Value.MainKey))
         {
             if (_mCameraMenu.lineRenderer.enabled)
             {
@@ -565,20 +576,20 @@ internal class CameraManager : MonoBehaviour
         }
         
         var rot = transform.rotation;
-        if (Input.GetKey(KeyCode.UpArrow))
+        if (Input.GetKey(Plugin.KeyBinds["MoveForward"].Value.MainKey))
         {
             _mRigidbody.velocity = transform.forward * mSpeed;
-        } else if (Input.GetKey(KeyCode.DownArrow))
+        } else if (Input.GetKey(Plugin.KeyBinds["MoveBackward"].Value.MainKey))
         {
             _mRigidbody.velocity = -transform.forward * mSpeed;
-        } else if (Input.GetKey(KeyCode.RightArrow))
+        } else if (Input.GetKey(Plugin.KeyBinds["MoveRight"].Value.MainKey))
         {
             _mRigidbody.velocity = transform.right * mSpeed;
         }
-        else if (Input.GetKey(KeyCode.LeftArrow))
+        else if (Input.GetKey(Plugin.KeyBinds["MoveLeft"].Value.MainKey))
         {
             _mRigidbody.velocity = -transform.right * mSpeed;
-        } else if (Input.GetKey(KeyCode.Space) && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+        } else if (Input.GetKey(Plugin.KeyBinds["MoveUp"].Value.MainKey) && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
         {
             _mRigidbody.velocity = transform.up * mSpeed;
         }
@@ -648,7 +659,7 @@ internal class CameraManager : MonoBehaviour
 
 internal class PointsManager : MonoBehaviour
 {                                  //position, rotation, fov, speed, type, time
-    public Dictionary<int, (Vector3, Vector3, float, int, int, float)> Points = new();
+    public readonly Dictionary<int, (Vector3, Vector3, float, int, int, float)> Points = new();
     public Dictionary<int, GameObject> PointsObjects = new();
     private CameraMenu _cameraMenu;
     public GameObject conePrefab;
