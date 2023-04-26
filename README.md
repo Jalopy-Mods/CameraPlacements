@@ -49,6 +49,7 @@ Animation mode is the mod of animation. Triangle is linear, the Round is round (
 For playing the animation, click **Launch animation**.
 
 You can give a name for your `Group` *(= save)*, and click `Manage Saves` for opening a new window, so you can manage the other saves (Load and Delete them).
+<br>(Save files are saved in `C:\Users\%username%\AppData\LocalLow\Minskworks\Jalopy\ModSaves\CameraPoints`)
 
 ## Contact
 
