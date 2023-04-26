@@ -1,3 +1,5 @@
+You can get <b>[a preview here](https://youtu.be/W_W_j77gFvI)</b>.
+<br>
 ## Installation
 
 For using the mod, you need to have <b>[BepInEx](https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip)</b> installed.
