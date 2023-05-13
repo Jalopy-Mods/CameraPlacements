@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\MeblIkea\\RiderProjects\\CameraPlacements\\CameraPlacements.csproj": {}
+    "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\CameraPlacements.csproj": {}
   },
   "projects": {
-    "C:\\Users\\MeblIkea\\RiderProjects\\CameraPlacements\\CameraPlacements.csproj": {
+    "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\CameraPlacements.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\MeblIkea\\RiderProjects\\CameraPlacements\\CameraPlacements.csproj",
+        "projectUniqueName": "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\CameraPlacements.csproj",
         "projectName": "CameraPlacements",
-        "projectPath": "C:\\Users\\MeblIkea\\RiderProjects\\CameraPlacements\\CameraPlacements.csproj",
+        "projectPath": "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\CameraPlacements.csproj",
         "packagesPath": "C:\\Users\\MeblIkea\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\MeblIkea\\RiderProjects\\CameraPlacements\\obj\\",
+        "outputPath": "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\MeblIkea\\RiderProjects\\CameraPlacements\\NuGet.Config",
+          "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\NuGet.Config",
           "C:\\Users\\MeblIkea\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -42,6 +42,19 @@
         "net35": {
           "targetAlias": "net35",
           "dependencies": {
+            "BepInEx.Analyzers": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.*, )"
+            },
+            "BepInEx.Core": {
+              "target": "Package",
+              "version": "[5.*, )"
+            },
+            "BepInEx.PluginInfoProps": {
+              "target": "Package",
+              "version": "[1.*, )"
+            },
             "Microsoft.NETFramework.ReferenceAssemblies": {
               "suppressParent": "All",
               "target": "Package",

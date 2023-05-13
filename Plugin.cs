@@ -1,62 +1,59 @@
 ﻿using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using BepInEx.Configuration;
 using JetBrains.Annotations;
-using JaLoader;
+// using UnityEditor;
 using System.Linq;
 using UnityEngine;
 using System.IO;
+using BepInEx;
 using System;
 
 
 namespace CameraPlacements;
 
-public class Plugin : Mod
+[BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+public class Plugin : BaseUnityPlugin
 {
     private CameraMenu _cameraMenu;
     private GameObject _conePrefab;
     private MouseLook _locker0;
     private MouseLook _locker1;
-    // public static Dictionary<string, ConfigEntry<KeyboardShortcut>> KeyBinds;
-    
-    public override string ModID => "CameraPlacements";
-    public override string ModName => "Camera Placements";
-    public override string ModAuthor => "MeblIkea";
-    public override string ModDescription => "This mod let you place cameras in the map, and do animations.";
-    public override string ModVersion => "1.0.1";
-    
-    public override WhenToInit WhenToInit => WhenToInit.InMenu;
+    public static Dictionary<string, ConfigEntry<KeyboardShortcut>> KeyBinds;
 
-    public override void Start()
+    private void Awake()
     {
+        Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+        
         var coneBundle = AssetBundle.LoadFromFile(Path.Combine(Application.dataPath, "CameraPlacementsAssets"));
         if (coneBundle == null)
         {
             Debug.LogError("Failed to load AssetBundle!");
             return;
         }
-        // KeyBinds = new Dictionary<string, ConfigEntry<KeyboardShortcut>>
-        // {
-        //     { "OpenMenu", Config.Bind("Hotkeys", "OpenMenu", new KeyboardShortcut(KeyCode.F10)) },
-        //     { "MoveForward", Config.Bind("Hotkeys", "MoveForward", new KeyboardShortcut(KeyCode.UpArrow)) },
-        //     { "MoveBackward", Config.Bind("Hotkeys", "MoveBackward", new KeyboardShortcut(KeyCode.DownArrow)) },
-        //     { "MoveLeft", Config.Bind("Hotkeys", "MoveLeft", new KeyboardShortcut(KeyCode.LeftArrow)) },
-        //     { "MoveRight", Config.Bind("Hotkeys", "MoveRight", new KeyboardShortcut(KeyCode.RightArrow)) },
-        //     { "MoveUp", Config.Bind("Hotkeys", "MoveUp", new KeyboardShortcut(KeyCode.Space)) },
-        //     { "ControlPoint", Config.Bind("Hotkeys", "PreviewPoint", new KeyboardShortcut(KeyCode.Space)) }
-        // };
+        KeyBinds = new Dictionary<string, ConfigEntry<KeyboardShortcut>>
+        {
+            { "OpenMenu", Config.Bind("Hotkeys", "OpenMenu", new KeyboardShortcut(KeyCode.F10)) },
+            { "MoveForward", Config.Bind("Hotkeys", "MoveForward", new KeyboardShortcut(KeyCode.UpArrow)) },
+            { "MoveBackward", Config.Bind("Hotkeys", "MoveBackward", new KeyboardShortcut(KeyCode.DownArrow)) },
+            { "MoveLeft", Config.Bind("Hotkeys", "MoveLeft", new KeyboardShortcut(KeyCode.LeftArrow)) },
+            { "MoveRight", Config.Bind("Hotkeys", "MoveRight", new KeyboardShortcut(KeyCode.RightArrow)) },
+            { "MoveUp", Config.Bind("Hotkeys", "MoveUp", new KeyboardShortcut(KeyCode.Space)) },
+            { "ControlPoint", Config.Bind("Hotkeys", "PreviewPoint", new KeyboardShortcut(KeyCode.Space)) }
+        };
 
         _conePrefab = Instantiate(coneBundle.LoadAsset<GameObject>("pointer-cone"));
         DontDestroyOnLoad(_conePrefab);
         coneBundle.Unload(false);
     }
 
-    public override void OnEnable()
+    private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    public override void OnDisable()
+    private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
@@ -89,7 +86,7 @@ public class Plugin : Mod
         }
     }
 
-    public override void Update()
+    private void Update()
     {
         if (SceneManager.GetActiveScene().name != "Scn2_CheckpointBravo" &&
             SceneManager.GetActiveScene().name != "MainMenu") return;
@@ -553,7 +550,7 @@ internal class CameraManager : MonoBehaviour
         }
 
         if ((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) &&
-            Input.GetKey(KeyCode.Space))
+            Input.GetKey(Plugin.KeyBinds["ControlPoint"].Value.MainKey))
         {
             if (_mCameraMenu.lineRenderer.enabled)
             {
@@ -579,20 +576,20 @@ internal class CameraManager : MonoBehaviour
         }
         
         var rot = transform.rotation;
-        if (Input.GetKey(KeyCode.UpArrow))
+        if (Input.GetKey(Plugin.KeyBinds["MoveForward"].Value.MainKey))
         {
             _mRigidbody.velocity = transform.forward * mSpeed;
-        } else if (Input.GetKey(KeyCode.DownArrow))
+        } else if (Input.GetKey(Plugin.KeyBinds["MoveBackward"].Value.MainKey))
         {
             _mRigidbody.velocity = -transform.forward * mSpeed;
-        } else if (Input.GetKey(KeyCode.RightArrow))
+        } else if (Input.GetKey(Plugin.KeyBinds["MoveRight"].Value.MainKey))
         {
             _mRigidbody.velocity = transform.right * mSpeed;
         }
-        else if (Input.GetKey(KeyCode.LeftArrow))
+        else if (Input.GetKey(Plugin.KeyBinds["MoveLeft"].Value.MainKey))
         {
             _mRigidbody.velocity = -transform.right * mSpeed;
-        } else if (Input.GetKey(KeyCode.Space) && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+        } else if (Input.GetKey(Plugin.KeyBinds["MoveUp"].Value.MainKey) && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
         {
             _mRigidbody.velocity = transform.up * mSpeed;
         }
