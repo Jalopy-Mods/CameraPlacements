@@ -1,19 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "KGm9/FMk/0+ZeYtfCPvxgxKYn/Ns0A9/1ccAAULaOjxWV0CC5tF9nnxR4RWosLGoaOTApoQFI2LgGGfmLsNaJA==",
+  "dgSpecHash": "7R3YCEfJRhUOfzZzQSaByyEZ/jH48N+++IgSN1eiUSFvNDTXaVwBMbKfQ3diVRsbItDZf3jm+FdhCANJ0L2jTw==",
   "success": true,
-  "projectFilePath": "D:\\SteamLibrary\\steamapps\\common\\Jalopy\\BepInEx\\plugins\\CameraPlacements\\CameraPlacements.csproj",
+  "projectFilePath": "C:\\Users\\MeblIkea\\RiderProjects\\CameraPlacements\\CameraPlacements.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\MeblIkea\\.nuget\\packages\\bepinex.analyzers\\1.0.8\\bepinex.analyzers.1.0.8.nupkg.sha512",
-    "C:\\Users\\MeblIkea\\.nuget\\packages\\bepinex.baselib\\5.4.20\\bepinex.baselib.5.4.20.nupkg.sha512",
-    "C:\\Users\\MeblIkea\\.nuget\\packages\\bepinex.core\\5.4.21\\bepinex.core.5.4.21.nupkg.sha512",
-    "C:\\Users\\MeblIkea\\.nuget\\packages\\bepinex.plugininfoprops\\1.1.0\\bepinex.plugininfoprops.1.1.0.nupkg.sha512",
-    "C:\\Users\\MeblIkea\\.nuget\\packages\\harmonyx\\2.7.0\\harmonyx.2.7.0.nupkg.sha512",
     "C:\\Users\\MeblIkea\\.nuget\\packages\\microsoft.netframework.referenceassemblies\\1.0.2\\microsoft.netframework.referenceassemblies.1.0.2.nupkg.sha512",
     "C:\\Users\\MeblIkea\\.nuget\\packages\\microsoft.netframework.referenceassemblies.net35\\1.0.2\\microsoft.netframework.referenceassemblies.net35.1.0.2.nupkg.sha512",
-    "C:\\Users\\MeblIkea\\.nuget\\packages\\mono.cecil\\0.10.4\\mono.cecil.0.10.4.nupkg.sha512",
-    "C:\\Users\\MeblIkea\\.nuget\\packages\\monomod.runtimedetour\\21.12.13.1\\monomod.runtimedetour.21.12.13.1.nupkg.sha512",
-    "C:\\Users\\MeblIkea\\.nuget\\packages\\monomod.utils\\21.12.13.1\\monomod.utils.21.12.13.1.nupkg.sha512",
     "C:\\Users\\MeblIkea\\.nuget\\packages\\theraot.core\\3.2.11\\theraot.core.3.2.11.nupkg.sha512",
     "C:\\Users\\MeblIkea\\.nuget\\packages\\unityengine.modules\\2017.4.23\\unityengine.modules.2017.4.23.nupkg.sha512"
   ],

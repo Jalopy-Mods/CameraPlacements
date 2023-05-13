@@ -10,14 +10,32 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
-    <PackageReference Include="BepInEx.Core" Version="5.*" />
-    <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
     <PackageReference Include="Theraot.Core" Version="3.2.11" />
     <PackageReference Include="UnityEngine.Modules" Version="2017.4.23" IncludeAssets="compile" />
 
 	<Reference Include="Assembly-CSharp"> 
 	<HintPath> lib\Assembly-CSharp.dll </HintPath> 
+	</Reference>
+	<Reference Include="Assembly-CSharp-firstpass"> 
+	<HintPath> lib\Assembly-CSharp-firstpass.dll </HintPath> 
+	</Reference>
+	<Reference Include="Assembly-UnityScript"> 
+	<HintPath> lib\Assembly-UnityScript.dll </HintPath> 
+	</Reference>
+	<Reference Include="Assembly-UnityScript-firstpass"> 
+	<HintPath> lib\Assembly-UnityScript-firstpass.dll </HintPath> 
+	</Reference>
+
+	<Reference Include="JaLoader">
+		<HintPath>lib\JaLoader.dll</HintPath>
+	</Reference>
+
+	<Reference Include="UnityEngine">
+		<HintPath>lib\UnityEngine.dll</HintPath>
+	</Reference>
+
+	<Reference Include="UnityEngine.CoreModule">
+	  <HintPath>lib\UnityEngine.CoreModule.dll</HintPath>
 	</Reference>
   </ItemGroup>
   
@@ -28,4 +46,11 @@
   <ItemGroup>
     <Folder Include="Documentation\" />
   </ItemGroup>
+    <PropertyGroup>
+      <Username Condition="'$(Username)' == ''">$([System.Environment]::UserName)</Username>
+    </PropertyGroup>
+
+    <Target Name="CopyDllToModFolder" AfterTargets="Build">
+      <Copy SourceFiles="$(TargetPath)" DestinationFolder="C:\Users\$(Username)\Documents\Jalopy\Mods" />
+    </Target>
 </Project>
