@@ -2,15 +2,9 @@ You can get <b>[a preview here](https://youtu.be/W_W_j77gFvI)</b>.
 <br>
 ## Installation
 
-For using the mod, you need to have <b>[BepInEx](https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip)</b> installed.
+For using the mod, you need to have <b>[JaLoader](https://github.com/theLeaxx/JaLoader)</b> installed.
 
-To do that, you need to [download the zip file](https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip), extract it and copy the folder <b>BepInEx</b> into the game folder.
-<br>
-<img height="200" src="https://cdn.discordapp.com/attachments/897896186487390218/1098716879331270879/image.png" width="375"/>
-
-Then, you just have to [download](https://github.com/MeblIkea/CameraPlacements/releases) the mod from the Releases, and you can copy the entire folder into the game folder (as you did with **BepInEx**) (and so you should have a **CameraPlacements** folder in your `BepInEx/Plugins`).
-
-
+Then, you just have to [download](https://github.com/MeblIkea/CameraPlacements/releases) the mod from the Releases, and you can copy `CameraPlacements.dll` in `C:\Users\%username%\Documents\Jalopy\Mods`, and the `Jalopy_Data` folder in the root folder of your game, so it will automaticly put the assets files in `Jalopy_Data`.<br><br>
 
 ## Keybinds
 
