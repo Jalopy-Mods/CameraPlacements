@@ -8,19 +8,17 @@ Then, you just have to [download](https://github.com/MeblIkea/CameraPlacements/r
 
 ## Keybinds
 
-**All the keybinds can be changed in the mod config file.**
-
 | **KEY**                        | **DEFINITION**                                          |
 | ------------------------------ | ------------------------------------------------------- |
-| F10 (configurable)             | Open Menu (only in the main menu scene, or in-game)     |
-| Up Arrow (configurable)        | Move Forward                                            |
-| Back Arrow (configurable)      | Move Backward                                           |
-| Left Arrow (configurable)      | Move Left                                               |
-| Right Arrow (configurable)     | Move Right                                              |
-| SPACE (configurable)           | Move Up                                                 |
+| F10                            | Open Menu (only in the main menu scene, or in-game)     |
+| Up Arrow                       | Move Forward                                            |
+| Back Arrow                     | Move Backward                                           |
+| Left Arrow                     | Move Left                                               |
+| Right Arrow                    | Move Right                                              |
+| SPACE                          | Move Up                                                 |
 | *Control + Mouse Wheel*        | Change camera FOV                                       |
 | *Shift + Mouse Wheel*          | Change camera speed (*shift* increase the speed faster) |
-| *Shift* + SPACE (configurable) | Preview / Quick Move a point                            |
+| *Shift* + SPACE                | Preview / Quick Move a point                            |
 | *ESCAPE*                       | Stop the current animation.                             |
 
 
@@ -28,7 +26,7 @@ Then, you just have to [download](https://github.com/MeblIkea/CameraPlacements/r
 ## How does it works?
 
 After loading the game, you can go to the main menu (or in-game, it's the same).
-Press F10, and you should see a menu at the bottom-left corner. ⚠️**If you don't see it, there is an issue.**⚠️
+Press F10, and you should see a menu at the bottom-left corner. ⚠️<b>If you don't see it, there is an issue.</b>⚠️
 
 Press `Switch view to freecam` to get in FreeCam. If you don't like the camera rolling, you can lock X&Z axis, it might be better.
 You can manually change it's position / rotation, and *Control + Scroll* change the camera FOV, while just scrolling change the camera speed (Press *shift* while scrolling for increasing faster).
