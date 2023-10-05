@@ -48,15 +48,11 @@ public class Plugin : BaseUnityPlugin
         coneBundle.Unload(false);
     }
 
-    private void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
+    private void OnEnable() SceneManager.sceneLoaded += OnSceneLoaded;
+    
 
-    private void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
+    private void OnDisable() SceneManager.sceneLoaded -= OnSceneLoaded;
+    
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
@@ -65,7 +61,6 @@ public class Plugin : BaseUnityPlugin
             _cameraMenu = new GameObject("CameraMenu").AddComponent<CameraMenu>();
             _cameraMenu.pointsManager.conePrefab = _conePrefab;
             _cameraMenu.GetComponent<CameraMenu>().enabled = false;
-            // I want to give this  value to this object: _toggleMenu
         }
         if (!scene.name.Equals("Scn2_CheckpointBravo")) return;
         _locker0 = GameObject.Find("/First Person Controller").GetComponent<MouseLook>();
