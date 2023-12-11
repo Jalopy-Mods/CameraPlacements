@@ -1,3 +1,5 @@
+[![](https://img.shields.io/github/downloads/Jalopy-Mods/CameraPlacements/total)](#)
+
 You can get <b>[a preview here](https://youtu.be/W_W_j77gFvI)</b>.
 <br>
 ## Installation
